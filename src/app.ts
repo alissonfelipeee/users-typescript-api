@@ -4,6 +4,8 @@ import express from "express";
 import { config } from "dotenv";
 import { PrismaCreateUserRepository } from "./repositories/create-user/prisma-create-user";
 import { CreateUserController } from "./controllers/create-user/create-user";
+import { PrismaUpdateUserRepository } from "./repositories/update-user/prisma-update-user";
+import { UpdateUserController } from "./controllers/update-user/update-user";
 
 config();
 
@@ -28,6 +30,20 @@ app.post("/users", async (req, res) => {
 
   const { body, statusCode } = await createUserController.handle({
     body: req.body,
+  });
+
+  res.status(statusCode).json(body);
+});
+
+app.patch("/users/:id", async (req, res) => {
+  const prismaUpdateUserRepository = new PrismaUpdateUserRepository();
+  const updateUserController = new UpdateUserController(
+    prismaUpdateUserRepository
+  );
+
+  const { body, statusCode } = await updateUserController.handle({
+    body: req.body,
+    params: req.params,
   });
 
   res.status(statusCode).json(body);
