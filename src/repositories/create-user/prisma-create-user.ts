@@ -5,7 +5,7 @@ import {
 import { prisma } from "../../database/prisma";
 import { User } from "../../models/user";
 
-export class PrismaCreateUser implements ICreateUserRepository {
+export class PrismaCreateUserRepository implements ICreateUserRepository {
   async createUser({
     firstName,
     lastName,
