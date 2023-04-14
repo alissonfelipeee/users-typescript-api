@@ -8,19 +8,11 @@ const user = {
   password: "123456",
 };
 
-const userEmptyFirstName = {
-  firstName: "",
+const userWithoutFirstName = {
   lastName: "Doe",
   email: "johndoe@gmail.com",
   password: "123456",
-}
-
-const userWithInvalidEmail = {
-  firstName: "John",
-  lastName: "Doe",
-  email: "johndoe",
-  password: "123456",
-}
+};
 
 describe("Create user", () => {
   it("should create a user", async () => {
@@ -33,8 +25,25 @@ describe("Create user", () => {
       body: user,
     });
 
-    expect(body).toEqual(user);
+    expect(body).toEqual({
+      ...user,
+      id: 1,
+    });
     expect(statusCode).toBe(201);
+  });
+
+  it("should not be able to create a user because firstName is missing", async () => {
+    const inMemoryUserRepository = new InMemoryUserRepository();
+    const createUserController = new CreateUserController(
+      inMemoryUserRepository
+    );
+
+    const { body, statusCode } = await createUserController.handle({
+      body: userWithoutFirstName as any,
+    });
+
+    expect(body).toEqual("Bad Request - Missing field: firstName");
+    expect(statusCode).toBe(400);
   });
 
   it("should not be able to create a user because firstName is empty", async () => {
@@ -44,7 +53,7 @@ describe("Create user", () => {
     );
 
     const { body, statusCode } = await createUserController.handle({
-      body: userEmptyFirstName,
+      body: { ...user, firstName: "" },
     });
 
     expect(body).toEqual("Bad Request - Invalid firstName");
@@ -58,10 +67,30 @@ describe("Create user", () => {
     );
 
     const { body, statusCode } = await createUserController.handle({
-      body: userWithInvalidEmail,
+      body: { ...user, email: "johndoe" },
     });
 
     expect(body).toEqual("Bad Request - Invalid email");
     expect(statusCode).toBe(400);
+  });
+
+  it("should return 500 if something goes wrong", async () => {
+    const inMemoryUserRepository = new InMemoryUserRepository();
+    const createUserController = new CreateUserController(
+      inMemoryUserRepository
+    );
+
+    jest
+      .spyOn(inMemoryUserRepository, "createUser")
+      .mockImplementationOnce(() => {
+        throw new Error();
+      });
+
+    const { body, statusCode } = await createUserController.handle({
+      body: user,
+    });
+
+    expect(body).toEqual("Internal Server Error");
+    expect(statusCode).toBe(500);
   });
 });

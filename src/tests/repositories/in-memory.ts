@@ -8,9 +8,11 @@ export class InMemoryUserRepository {
     return this.users;
   }
 
+
   async createUser(user: User): Promise<User> {
-    this.users.push(user);
-    return user;
+    const newUser = { ...user, id: this.users.length + 1 };
+    this.users.push(newUser);
+    return newUser;
   }
 
   async updateUser(id: number, params: UpdateUserParams): Promise<User> {
