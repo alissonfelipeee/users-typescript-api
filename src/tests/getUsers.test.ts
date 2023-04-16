@@ -28,7 +28,11 @@ describe("Get Users", () => {
 
     const { body, statusCode } = await getUsersController.handle();
 
-    expect(body).toEqual([userCreated]);
+    // remove password from user
+
+    const { password, ...userWithoutPassword } = userCreated;
+
+    expect(body).toEqual([userWithoutPassword]);
     expect(statusCode).toBe(200);
   });
 

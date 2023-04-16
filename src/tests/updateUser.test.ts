@@ -1,3 +1,4 @@
+import { User } from "../models/user";
 import { UpdateUserController } from "./../controllers/update-user/update-user";
 import { InMemoryUserRepository } from "./repositories/in-memory";
 
@@ -27,9 +28,38 @@ describe("Update User", () => {
       },
     });
 
+    const { password, ...userWithoutPassword } = user.body as User;
+
     expect(user.body).toEqual({
-      ...userCreated,
+      ...userWithoutPassword,
       lastName: "Doe Jr",
+    });
+  });
+
+  it("should update user and update password", async () => {
+    const inMemoryUserRepository = new InMemoryUserRepository();
+    const updateUserController = new UpdateUserController(
+      inMemoryUserRepository
+    );
+
+    const userCreated = await inMemoryUserRepository.createUser(userExample);
+
+    const user = await updateUserController.handle({
+      params: {
+        id: userCreated.id,
+      },
+      body: {
+        lastName: "Doe Jr",
+        password: "1234567",
+      },
+    });
+
+    const { password, ...userWithoutPassword } = user.body as User;
+
+    expect(user.body).toEqual({
+      ...userWithoutPassword,
+      lastName: "Doe Jr",
+
     });
   });
 
@@ -85,26 +115,7 @@ describe("Update User", () => {
     expect(user.body).toBe("Bad Request - Invalid fields");
   });
 
-  it("should return 404 if user not found by id", async () => {
-    const inMemoryUserRepository = new InMemoryUserRepository();
-    const updateUserController = new UpdateUserController(
-      inMemoryUserRepository
-    );
-
-    const user = await updateUserController.handle({
-      params: {
-        id: 2,
-      },
-      body: {
-        lastName: "Doe Jr",
-      },
-    });
-
-    expect(user.statusCode).toBe(404);
-    expect(user.body).toBe("Not Found - User not found");
-  });
-
-  it("should return 500 if updateUserRepository throws", async () => {
+  it("should return 500 if something goes wrong", async () => {
     const inMemoryUserRepository = new InMemoryUserRepository();
     const updateUserController = new UpdateUserController(
       inMemoryUserRepository

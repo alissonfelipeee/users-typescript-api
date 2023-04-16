@@ -6,22 +6,26 @@ import {
   ICreateUserController,
   ICreateUserRepository,
 } from "./protocols";
+import { generateHash } from "../../utils/bcrypt";
 
 export class CreateUserController implements ICreateUserController {
   constructor(private readonly createUserRepository: ICreateUserRepository) {}
+
   async handle(
     httpRequest: HttpRequest<CreateUserParams>
   ): Promise<HttpResponse<User>> {
     try {
-      const requiredFields: string[] = [
-        "firstName",
-        "lastName",
-        "email",
-        "password",
-      ];
+      if (!httpRequest.body) {
+        return {
+          statusCode: 400,
+          body: "Bad Request - Missing body",
+        };
+      }
+
+      const requiredFields = ["firstName", "lastName", "email", "password"];
 
       for (const field of requiredFields) {
-        if (!httpRequest?.body?.hasOwnProperty(field)) {
+        if (!httpRequest.body.hasOwnProperty(field)) {
           return {
             statusCode: 400,
             body: `Bad Request - Missing field: ${field}`,
@@ -30,7 +34,7 @@ export class CreateUserController implements ICreateUserController {
       }
 
       for (const field of requiredFields) {
-        if (httpRequest?.body?.[field as keyof CreateUserParams] === "" ) {
+        if (httpRequest.body[field as keyof CreateUserParams] === "") {
           return {
             statusCode: 400,
             body: `Bad Request - Invalid ${field}`,
@@ -47,11 +51,16 @@ export class CreateUserController implements ICreateUserController {
         };
       }
 
-      const user = await this.createUserRepository.createUser(httpRequest.body!);
+      const user = await this.createUserRepository.createUser({
+        ...httpRequest.body,
+        password: await generateHash(httpRequest.body.password),
+      });
+
+      const { password, ...userWithoutPassword } = user;
 
       return {
         statusCode: 201,
-        body: user,
+        body: userWithoutPassword as User,
       };
     } catch (error) {
       return {

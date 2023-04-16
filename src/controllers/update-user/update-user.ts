@@ -1,5 +1,6 @@
 import { prisma } from "../../database/prisma";
 import { User } from "../../models/user";
+import { generateHash } from "../../utils/bcrypt";
 import { HttpRequest, HttpResponse } from "../protocols";
 import {
   IUpdateUserController,
@@ -43,17 +44,10 @@ export class UpdateUserController implements IUpdateUserController {
         };
       }
 
-      const userExists = await prisma.user.findUnique({
-        where: {
-          id: +id,
-        }
-      })
-
-      if (!userExists) {
-        return {
-          statusCode: 404,
-          body: "Not Found - User not found",
-        };
+      if (httpRequest.body.password) {
+        httpRequest.body.password = await generateHash(
+          httpRequest.body.password
+        );
       }
 
       const user = await this.updateUserRepository.updateUser(
@@ -61,9 +55,11 @@ export class UpdateUserController implements IUpdateUserController {
         httpRequest.body
       );
 
+      const { password, ...userWithoutPassword } = user;
+
       return {
         statusCode: 200,
-        body: user,
+        body: userWithoutPassword as User,
       };
     } catch (error) {
       return {

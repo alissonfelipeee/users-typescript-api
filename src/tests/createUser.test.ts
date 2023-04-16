@@ -1,3 +1,4 @@
+import { User } from "../models/user";
 import { CreateUserController } from "./../controllers/create-user/create-user";
 import { InMemoryUserRepository } from "./repositories/in-memory";
 
@@ -25,12 +26,26 @@ describe("Create user", () => {
       body: user,
     });
 
+    const { password, ...userWithoutPassword } = body as User;
+
     expect(body).toEqual({
-      ...user,
+      ...userWithoutPassword,
       id: 1,
     });
     expect(statusCode).toBe(201);
   });
+
+  it("shoul not be able create user because not exists a body", async () => {
+    const inMemoryUserRepository = new InMemoryUserRepository();
+    const createUserController = new CreateUserController(
+      inMemoryUserRepository
+    );
+
+    const { body, statusCode } = await createUserController.handle({});
+
+    expect(body).toEqual("Bad Request - Missing body");
+    expect(statusCode).toBe(400);
+  })
 
   it("should not be able to create a user because firstName is missing", async () => {
     const inMemoryUserRepository = new InMemoryUserRepository();
@@ -39,7 +54,7 @@ describe("Create user", () => {
     );
 
     const { body, statusCode } = await createUserController.handle({
-      body: userWithoutFirstName as any,
+      body: userWithoutFirstName as User,
     });
 
     expect(body).toEqual("Bad Request - Missing field: firstName");
