@@ -6,6 +6,7 @@ import { PrismaCreateUserRepository } from "./repositories/create-user/prisma-cr
 import { CreateUserController } from "./controllers/create-user/create-user";
 import { PrismaUpdateUserRepository } from "./repositories/update-user/prisma-update-user";
 import { UpdateUserController } from "./controllers/update-user/update-user";
+import { PrismaEmailAlreadyExistsRepository } from "./repositories/email-already-exists/prisma-email-already-exists";
 
 config();
 
@@ -24,8 +25,11 @@ app.get("/users", async (req, res) => {
 
 app.post("/users", async (req, res) => {
   const prismaCreateUserRepository = new PrismaCreateUserRepository();
+  const prismaEmailAlreadyExistsRepository =
+    new PrismaEmailAlreadyExistsRepository();
   const createUserController = new CreateUserController(
-    prismaCreateUserRepository
+    prismaCreateUserRepository,
+    prismaEmailAlreadyExistsRepository
   );
 
   const { body, statusCode } = await createUserController.handle({

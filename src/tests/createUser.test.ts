@@ -1,6 +1,9 @@
 import { User } from "../models/user";
 import { CreateUserController } from "./../controllers/create-user/create-user";
-import { InMemoryUserRepository } from "./repositories/in-memory";
+import {
+  InMemoryEmailAlreadyExistsRepository,
+  InMemoryUserRepository,
+} from "./repositories/in-memory";
 
 const user = {
   firstName: "John",
@@ -18,8 +21,11 @@ const userWithoutFirstName = {
 describe("Create user", () => {
   it("should create a user", async () => {
     const inMemoryUserRepository = new InMemoryUserRepository();
+    const inMemoryEmailAlreadyExistsRepository =
+      new InMemoryEmailAlreadyExistsRepository();
     const createUserController = new CreateUserController(
-      inMemoryUserRepository
+      inMemoryUserRepository,
+      inMemoryEmailAlreadyExistsRepository
     );
 
     const { body, statusCode } = await createUserController.handle({
@@ -37,20 +43,26 @@ describe("Create user", () => {
 
   it("shoul not be able create user because not exists a body", async () => {
     const inMemoryUserRepository = new InMemoryUserRepository();
+    const inMemoryEmailAlreadyExistsRepository =
+      new InMemoryEmailAlreadyExistsRepository();
     const createUserController = new CreateUserController(
-      inMemoryUserRepository
+      inMemoryUserRepository,
+      inMemoryEmailAlreadyExistsRepository
     );
 
     const { body, statusCode } = await createUserController.handle({});
 
     expect(body).toEqual("Bad Request - Missing body");
     expect(statusCode).toBe(400);
-  })
+  });
 
   it("should not be able to create a user because firstName is missing", async () => {
     const inMemoryUserRepository = new InMemoryUserRepository();
+    const inMemoryEmailAlreadyExistsRepository =
+      new InMemoryEmailAlreadyExistsRepository();
     const createUserController = new CreateUserController(
-      inMemoryUserRepository
+      inMemoryUserRepository,
+      inMemoryEmailAlreadyExistsRepository
     );
 
     const { body, statusCode } = await createUserController.handle({
@@ -63,8 +75,11 @@ describe("Create user", () => {
 
   it("should not be able to create a user because firstName is empty", async () => {
     const inMemoryUserRepository = new InMemoryUserRepository();
+    const inMemoryEmailAlreadyExistsRepository =
+      new InMemoryEmailAlreadyExistsRepository();
     const createUserController = new CreateUserController(
-      inMemoryUserRepository
+      inMemoryUserRepository,
+      inMemoryEmailAlreadyExistsRepository
     );
 
     const { body, statusCode } = await createUserController.handle({
@@ -77,8 +92,11 @@ describe("Create user", () => {
 
   it("should not be able to create a user because email is invalid", async () => {
     const inMemoryUserRepository = new InMemoryUserRepository();
+    const inMemoryEmailAlreadyExistsRepository =
+      new InMemoryEmailAlreadyExistsRepository();
     const createUserController = new CreateUserController(
-      inMemoryUserRepository
+      inMemoryUserRepository,
+      inMemoryEmailAlreadyExistsRepository
     );
 
     const { body, statusCode } = await createUserController.handle({
@@ -89,10 +107,34 @@ describe("Create user", () => {
     expect(statusCode).toBe(400);
   });
 
+  it("should not be able to create a user because email already exists", async () => {
+    const inMemoryUserRepository = new InMemoryUserRepository();
+    const inMemoryEmailAlreadyExistsRepository =
+      new InMemoryEmailAlreadyExistsRepository();
+    const createUserController = new CreateUserController(
+      inMemoryUserRepository,
+      inMemoryEmailAlreadyExistsRepository
+    );
+
+    await createUserController.handle({
+      body: user,
+    });
+
+    const { body, statusCode } = await createUserController.handle({
+      body: user,
+    });
+
+    expect(body).toEqual("Bad Request - Email already exists");
+    expect(statusCode).toBe(400);
+  });
+
   it("should return 500 if something goes wrong", async () => {
     const inMemoryUserRepository = new InMemoryUserRepository();
+    const inMemoryEmailAlreadyExistsRepository =
+      new InMemoryEmailAlreadyExistsRepository();
     const createUserController = new CreateUserController(
-      inMemoryUserRepository
+      inMemoryUserRepository,
+      inMemoryEmailAlreadyExistsRepository
     );
 
     jest
@@ -102,7 +144,7 @@ describe("Create user", () => {
       });
 
     const { body, statusCode } = await createUserController.handle({
-      body: user,
+      body: { ...user, email: "johndoe2@gmail.com" },
     });
 
     expect(body).toEqual("Internal Server Error");

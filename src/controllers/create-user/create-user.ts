@@ -7,9 +7,13 @@ import {
   ICreateUserRepository,
 } from "./protocols";
 import { generateHash } from "../../utils/bcrypt";
+import { IEmailAlreadyExistsRepository } from "../../services/email-already-exists/protocols";
 
 export class CreateUserController implements ICreateUserController {
-  constructor(private readonly createUserRepository: ICreateUserRepository) {}
+  constructor(
+    private readonly createUserRepository: ICreateUserRepository,
+    private readonly verifyEmailAlreadyExists: IEmailAlreadyExistsRepository
+  ) {}
 
   async handle(
     httpRequest: HttpRequest<CreateUserParams>
@@ -48,6 +52,18 @@ export class CreateUserController implements ICreateUserController {
         return {
           statusCode: 400,
           body: "Bad Request - Invalid email",
+        };
+      }
+
+      const emailAlreadyExists =
+        await this.verifyEmailAlreadyExists.emailAlreadyExists(
+          httpRequest.body.email
+        );
+
+      if (emailAlreadyExists) {
+        return {
+          statusCode: 400,
+          body: "Bad Request - Email already exists",
         };
       }
 
