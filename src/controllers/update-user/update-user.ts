@@ -1,26 +1,23 @@
 import { User } from "../../models/user";
 import { generateHash } from "../../utils/bcrypt";
 import { HttpRequest, HttpResponse, IController } from "../protocols";
+import { badRequest, ok, serverError } from "../utils";
 import { IUpdateUserRepository, UpdateUserParams } from "./protocols";
 
 export class UpdateUserController implements IController {
   constructor(private readonly updateUserRepository: IUpdateUserRepository) {}
-  async handle(httpRequest: HttpRequest<UpdateUserParams>): Promise<HttpResponse<User>> {
+  async handle(
+    httpRequest: HttpRequest<UpdateUserParams>
+  ): Promise<HttpResponse<User | string>> {
     try {
       const { id } = httpRequest.params;
 
       if (!id) {
-        return {
-          statusCode: 400,
-          body: "Bad Request - Missing id",
-        };
+        return badRequest("Bad Request - Missing param: id");
       }
 
       if (!httpRequest.body) {
-        return {
-          statusCode: 400,
-          body: "Bad Request - Missing body",
-        };
+        return badRequest("Bad Request - Missing body");
       }
 
       const allowedFieldsToUpdate: (keyof UpdateUserParams)[] = [
@@ -33,10 +30,7 @@ export class UpdateUserController implements IController {
       );
 
       if (someFieldIsNotAllowedToUpdate) {
-        return {
-          statusCode: 400,
-          body: "Bad Request - Invalid fields",
-        };
+        return badRequest("Bad Request - Invalid fields");
       }
 
       if (httpRequest.body.password) {
@@ -52,15 +46,9 @@ export class UpdateUserController implements IController {
 
       const { password, ...userWithoutPassword } = user;
 
-      return {
-        statusCode: 200,
-        body: userWithoutPassword as User,
-      };
+      return ok<User>(userWithoutPassword);
     } catch (error) {
-      return {
-        statusCode: 500,
-        body: "Internal Server Error",
-      };
+      return serverError();
     }
   }
 }

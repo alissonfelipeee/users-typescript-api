@@ -4,6 +4,7 @@ import { HttpRequest, HttpResponse, IController } from "../protocols";
 import { CreateUserParams, ICreateUserRepository } from "./protocols";
 import { generateHash } from "../../utils/bcrypt";
 import { IEmailAlreadyExistsRepository } from "../../services/email-already-exists/protocols";
+import { badRequest, created, serverError } from "../utils";
 
 export class CreateUserController implements IController {
   constructor(
@@ -13,42 +14,30 @@ export class CreateUserController implements IController {
 
   async handle(
     httpRequest: HttpRequest<CreateUserParams>
-  ): Promise<HttpResponse<User>> {
+  ): Promise<HttpResponse<User | string>> {
     try {
       if (!httpRequest.body) {
-        return {
-          statusCode: 400,
-          body: "Bad Request - Missing body",
-        };
+        return badRequest("Bad Request - Missing body");
       }
 
       const requiredFields = ["firstName", "lastName", "email", "password"];
 
       for (const field of requiredFields) {
         if (!httpRequest.body.hasOwnProperty(field)) {
-          return {
-            statusCode: 400,
-            body: `Bad Request - Missing field: ${field}`,
-          };
+          return badRequest(`Bad Request - Missing field: ${field}`);
         }
       }
 
       for (const field of requiredFields) {
         if (httpRequest.body[field as keyof CreateUserParams] === "") {
-          return {
-            statusCode: 400,
-            body: `Bad Request - Invalid ${field}`,
-          };
+          return badRequest(`Bad Request - Invalid ${field}`);
         }
       }
 
       const emailIsValid = validator.isEmail(httpRequest.body!.email);
 
       if (!emailIsValid) {
-        return {
-          statusCode: 400,
-          body: "Bad Request - Invalid email",
-        };
+        return badRequest("Bad Request - Invalid email");
       }
 
       const emailAlreadyExists =
@@ -57,10 +46,7 @@ export class CreateUserController implements IController {
         );
 
       if (emailAlreadyExists) {
-        return {
-          statusCode: 400,
-          body: "Bad Request - Email already exists",
-        };
+        return badRequest("Bad Request - Email already exists");
       }
 
       const user = await this.createUserRepository.createUser({
@@ -70,15 +56,9 @@ export class CreateUserController implements IController {
 
       const { password, ...userWithoutPassword } = user;
 
-      return {
-        statusCode: 201,
-        body: userWithoutPassword as User,
-      };
+      return created<User>(userWithoutPassword);
     } catch (error) {
-      return {
-        statusCode: 500,
-        body: "Internal Server Error",
-      };
+      return serverError();
     }
   }
 }
