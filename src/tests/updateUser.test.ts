@@ -34,6 +34,7 @@ describe("Update User", () => {
       ...userWithoutPassword,
       lastName: "Doe Jr",
     });
+    expect(user.statusCode).toBe(200);
   });
 
   it("should update user and update password", async () => {
@@ -59,8 +60,8 @@ describe("Update User", () => {
     expect(user.body).toEqual({
       ...userWithoutPassword,
       lastName: "Doe Jr",
-
     });
+    expect(user.statusCode).toBe(200);
   });
 
   it("should return 400 if id is not provided", async () => {
@@ -76,8 +77,8 @@ describe("Update User", () => {
       },
     });
 
+    expect(user.body).toBe("Bad Request - Missing param: id");
     expect(user.statusCode).toBe(400);
-    expect(user.body).toBe("Bad Request - Missing id");
   });
 
   it("should return 400 if body is not provided", async () => {
@@ -92,15 +93,15 @@ describe("Update User", () => {
       },
     });
 
-    expect(user.statusCode).toBe(400);
     expect(user.body).toBe("Bad Request - Missing body");
+    expect(user.statusCode).toBe(400);
   });
 
   it("should return 400 if there are invalid fields", async () => {
     const inMemoryUserRepository = new InMemoryUserRepository();
     const updateUserController = new UpdateUserController(
       inMemoryUserRepository
-    );
+    ) as any; // I found no other solution to perform this test other than changing the controller type to ANY, so that the error occurs!
 
     const user = await updateUserController.handle({
       params: {
@@ -111,8 +112,8 @@ describe("Update User", () => {
       },
     });
 
-    expect(user.statusCode).toBe(400);
     expect(user.body).toBe("Bad Request - Invalid fields");
+    expect(user.statusCode).toBe(400);
   });
 
   it("should return 500 if something goes wrong", async () => {
@@ -136,7 +137,7 @@ describe("Update User", () => {
       },
     });
 
-    expect(user.statusCode).toBe(500);
     expect(user.body).toBe("Internal Server Error");
+    expect(user.statusCode).toBe(500);
   });
 });

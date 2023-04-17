@@ -1,6 +1,6 @@
-import { User } from "@prisma/client";
 import { IDeleteUserRepository } from "../../controllers/delete-user/protocols";
 import { prisma } from "../../database/prisma";
+import { User } from "../../models/user";
 
 export class PrismaDeleteUserRepository implements IDeleteUserRepository {
   async delete(id: number): Promise<User> {
