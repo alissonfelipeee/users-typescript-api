@@ -9,6 +9,7 @@ import { PrismaUpdateUserRepository } from "./repositories/update-user/prisma-up
 import { UpdateUserController } from "./controllers/update-user/update-user";
 import { PrismaEmailAlreadyExistsRepository } from "./repositories/email-already-exists/prisma-email-already-exists";
 import { DeleteUserController } from "./controllers/delete-user/delete-user";
+import { PrismaGetUserByIdRepository } from "./repositories/get-user-by-id/prisma-get-user-by-id";
 
 config();
 
@@ -57,8 +58,10 @@ app.patch("/users/:id", async (req, res) => {
 
 app.delete("/users/:id", async (req, res) => {
   const prismaDeleteUserRepository = new PrismaDeleteUserRepository();
+  const prismaGetUserByIdRepository = new PrismaGetUserByIdRepository();
   const deleteUserController = new DeleteUserController(
-    prismaDeleteUserRepository
+    prismaDeleteUserRepository,
+    prismaGetUserByIdRepository
   );
 
   const { body, statusCode } = await deleteUserController.handle({

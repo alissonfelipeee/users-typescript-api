@@ -1,9 +1,14 @@
+import { GetUserByIdService } from "./../../services/get-user-by-id/get-user-by-id";
 import { User } from "../../models/user";
 import { HttpRequest, HttpResponse } from "../protocols";
 import { IDeleteUserController, IDeleteUserRepository } from "./protocols";
+import { IGetUserByIdRepository } from "../../services/get-user-by-id/protocols";
 
 export class DeleteUserController implements IDeleteUserController {
-  constructor(private readonly deleteUserRepository: IDeleteUserRepository) {}
+  constructor(
+    private readonly deleteUserRepository: IDeleteUserRepository,
+    private readonly getUserByIdService: IGetUserByIdRepository
+  ) {}
 
   async handle(httpRequest: HttpRequest<any>): Promise<HttpResponse<User>> {
     try {
@@ -13,6 +18,15 @@ export class DeleteUserController implements IDeleteUserController {
         return {
           statusCode: 400,
           body: "Missing param: id",
+        };
+      }
+
+      const userExists = await this.getUserByIdService.getUserById(+id);
+
+      if (!userExists) {
+        return {
+          statusCode: 404,
+          body: "User not found",
         };
       }
 
