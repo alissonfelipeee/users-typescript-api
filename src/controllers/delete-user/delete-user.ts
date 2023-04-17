@@ -1,10 +1,9 @@
-import { GetUserByIdService } from "./../../services/get-user-by-id/get-user-by-id";
 import { User } from "../../models/user";
-import { HttpRequest, HttpResponse } from "../protocols";
-import { IDeleteUserController, IDeleteUserRepository } from "./protocols";
+import { HttpRequest, HttpResponse, IController } from "../protocols";
+import { IDeleteUserRepository } from "./protocols";
 import { IGetUserByIdRepository } from "../../services/get-user-by-id/protocols";
 
-export class DeleteUserController implements IDeleteUserController {
+export class DeleteUserController implements IController {
   constructor(
     private readonly deleteUserRepository: IDeleteUserRepository,
     private readonly getUserByIdService: IGetUserByIdRepository

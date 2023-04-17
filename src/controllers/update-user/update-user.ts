@@ -1,16 +1,11 @@
-import { prisma } from "../../database/prisma";
 import { User } from "../../models/user";
 import { generateHash } from "../../utils/bcrypt";
-import { HttpRequest, HttpResponse } from "../protocols";
-import {
-  IUpdateUserController,
-  IUpdateUserRepository,
-  UpdateUserParams,
-} from "./protocols";
+import { HttpRequest, HttpResponse, IController } from "../protocols";
+import { IUpdateUserRepository, UpdateUserParams } from "./protocols";
 
-export class UpdateUserController implements IUpdateUserController {
+export class UpdateUserController implements IController {
   constructor(private readonly updateUserRepository: IUpdateUserRepository) {}
-  async handle(httpRequest: HttpRequest<any>): Promise<HttpResponse<User>> {
+  async handle(httpRequest: HttpRequest<UpdateUserParams>): Promise<HttpResponse<User>> {
     try {
       const { id } = httpRequest.params;
 
