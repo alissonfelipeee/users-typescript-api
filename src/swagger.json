@@ -1,0 +1,290 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API de usuários",
+    "description": "Essa API tem como objetivo realizar um CRUD de usuários.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor local"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "post": {
+        "summary": "Criar um novo usuário",
+        "description": "Essa rota é responsável por criar um novo usuário.",
+        "tags": ["Usuários"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User",
+                "required": ["firstName", "lastName", "email", "password"]
+              },
+              "example": {
+                "firstName": "João",
+                "lastName": "Silva",
+                "email": "joaosilva@exemplo.com",
+                "password": "123456"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuário criado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                },
+                "example": {
+                  "id": 1,
+                  "firstName": "João",
+                  "lastName": "Silva",
+                  "email": "joaosilva@exemplo.com"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro ao criar usuário",
+            "content": {
+              "application/json": {
+                "example": "Bad Request - [Reason for error]"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "example": "Internal Server Error"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Listar todos os usuários",
+        "description": "Essa rota é responsável por listar todos os usuários.",
+        "tags": ["Usuários"],
+        "responses": {
+          "200": {
+            "description": "Usuários listados com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserWithoutPassword"
+                  }
+                },
+                "example": [
+                  {
+                    "id": 1,
+                    "firstName": "João",
+                    "lastName": "Silva",
+                    "email": "joaosilva@exemplo.com"
+                  },
+                  {
+                    "id": 2,
+                    "firstName": "Maria",
+                    "lastName": "Silva",
+                    "email": "mariasilva@exemplo.com"
+                  }
+                ]
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "example": "Internal Server Error"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "patch": {
+        "summary": "Atualizar um usuário",
+        "description": "Essa rota é responsável por atualizar um usuário.",
+        "tags": ["Usuários"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do usuário",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "description": "Primeiro nome do usuário"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "description": "Sobrenome do usuário"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Senha do usuário"
+                  }
+                }
+              },
+              "example": {
+                "firstName": "João",
+                "lastName": "Santos",
+                "password": "123456789"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuário atualizado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserWithoutPassword"
+                },
+                "example": {
+                  "id": 1,
+                  "firstName": "João",
+                  "lastName": "Santos",
+                  "email": "joaosilva@exemplo.com"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro ao atualizar usuário",
+            "content": {
+              "application/json": {
+                "example": "Bad Request - [Reason for error]"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "example": "Internal Server Error"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletar um usuário",
+        "description": "Essa rota é responsável por deletar um usuário.",
+        "tags": ["Usuários"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do usuário",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário deletado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserWithoutPassword"
+                },
+                "example": {
+                  "id": 1,
+                  "firstName": "João",
+                  "lastName": "Santos",
+                  "email": "joaosilva@exemplo.com"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro ao deletar usuário",
+            "content": {
+              "application/json": {
+                "example": "Bad Request - [Reason for error]"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "example": "Internal Server Error"
+              }
+            }
+          }
+        }
+      }	
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "description": "Primeiro nome do usuário"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Sobrenome do usuário"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email do usuário"
+          },
+          "password": {
+            "type": "string",
+            "description": "Senha do usuário"
+          }
+        }
+      },
+      "UserWithoutPassword": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "ID do usuário"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "Primeiro nome do usuário"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Sobrenome do usuário"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email do usuário"
+          }
+        }
+      }
+    }
+  }
+}
