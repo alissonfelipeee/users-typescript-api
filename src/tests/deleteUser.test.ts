@@ -1,6 +1,9 @@
 import { User } from "../models/user";
 import { DeleteUserController } from "./../controllers/delete-user/delete-user";
-import { InMemoryGetUserByIdRepository, InMemoryUserRepository } from "./repositories/in-memory";
+import {
+  InMemoryGetUserByIdRepository,
+  InMemoryUserRepository,
+} from "./repositories/in-memory";
 
 const userExample = {
   id: 1,
@@ -45,7 +48,7 @@ describe("Delete User", () => {
       params: {},
     });
 
-    expect(body).toEqual("Missing param: id");
+    expect(body).toEqual("Bad Request - Missing param: id");
     expect(statusCode).toBe(400);
   });
 
@@ -63,7 +66,7 @@ describe("Delete User", () => {
       },
     });
 
-    expect(body).toEqual("User not found");
+    expect(body).toEqual("Not Found - User not found");
     expect(statusCode).toBe(404);
   });
 
