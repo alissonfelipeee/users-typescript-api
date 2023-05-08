@@ -1,3 +1,4 @@
+import { excludeFields } from "./../../utils/excludeFields";
 import validator from "validator";
 import { User } from "../../models/user";
 import { HttpRequest, HttpResponse, IController } from "../protocols";
@@ -54,9 +55,9 @@ export class CreateUserController implements IController {
         password: await generateHash(httpRequest.body.password),
       });
 
-      const { password, ...userWithoutPassword } = user;
+      excludeFields(user, ["password"]);
 
-      return created<User>(userWithoutPassword);
+      return created<User>(user);
     } catch (error) {
       return serverError();
     }

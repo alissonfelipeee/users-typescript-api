@@ -3,6 +3,7 @@ import { HttpRequest, HttpResponse, IController } from "../protocols";
 import { IDeleteUserRepository } from "./protocols";
 import { IGetUserByIdRepository } from "../../services/get-user-by-id/protocols";
 import { badRequest, notFound, ok, serverError } from "../utils";
+import { excludeFields } from "../../utils/excludeFields";
 
 export class DeleteUserController implements IController {
   constructor(
@@ -17,20 +18,20 @@ export class DeleteUserController implements IController {
       const { id } = httpRequest.params;
 
       if (!id) {
-        return badRequest("Missing param: id");
+        return badRequest("Bad Request - Missing param: id");
       }
 
       const userExists = await this.getUserByIdService.getUserById(+id);
 
       if (!userExists) {
-        return notFound("User not found");
+        return notFound("Not Found - User not found");
       }
 
       const user = await this.deleteUserRepository.delete(+id);
 
-      const { password, ...userWithoutPassword } = user;
+      excludeFields(user, ["password"]);
 
-      return ok<User>(userWithoutPassword);
+      return ok<User>(user);
     } catch (error) {
       return serverError();
     }

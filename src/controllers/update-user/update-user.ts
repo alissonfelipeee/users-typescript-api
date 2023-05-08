@@ -1,5 +1,6 @@
 import { User } from "../../models/user";
 import { generateHash } from "../../utils/bcrypt";
+import { excludeFields } from "../../utils/excludeFields";
 import { HttpRequest, HttpResponse, IController } from "../protocols";
 import { badRequest, ok, serverError } from "../utils";
 import { IUpdateUserRepository, UpdateUserParams } from "./protocols";
@@ -25,6 +26,7 @@ export class UpdateUserController implements IController {
         "lastName",
         "password",
       ];
+
       const someFieldIsNotAllowedToUpdate = Object.keys(httpRequest.body).some(
         (key) => !allowedFieldsToUpdate.includes(key as keyof UpdateUserParams)
       );
@@ -44,9 +46,9 @@ export class UpdateUserController implements IController {
         httpRequest.body
       );
 
-      const { password, ...userWithoutPassword } = user;
+      excludeFields(user, ["password"]);
 
-      return ok<User>(userWithoutPassword);
+      return ok<User>(user);
     } catch (error) {
       return serverError();
     }
